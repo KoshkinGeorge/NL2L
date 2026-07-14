@@ -1,0 +1,9 @@
+flask
+openai-whisper
+stanza
+pymorphy3
+pyyaml
+torch
+transformers
+requests
+python-dotenv

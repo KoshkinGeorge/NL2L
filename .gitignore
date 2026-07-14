@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+
+venv/
+.venv/
+
+raw/
+
+src/converter/nl2l-large/
+*.safetensors
+.vscode/
+
+src/temp.py
+src/main.py

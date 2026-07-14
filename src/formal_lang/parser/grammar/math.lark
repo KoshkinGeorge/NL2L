@@ -1,0 +1,112 @@
+%import common.WS
+%ignore WS
+
+%import .terminals (atom, number, variable, WORD, LPAREN, RPAREN, LBRACKET, RBRACKET, INDEX, COMMA)
+
+// Корневое правило – либо выражение, либо отношение
+start: relation | expr
+
+// Отношение объединяет все сравнения
+ relation: equation
+         | inequality
+         | subset
+         | in_relation
+         | notin_relation
+         | mapsto
+         | distribution
+
+// Плоское выражение – все конструкции на одном уровне
+expr: atom
+    | group
+    | plus_expr
+    | minus_expr
+    | times_expr
+    | divide_expr
+    | power_expr
+    | root_expr
+    | plusminus_expr
+    | function_expr
+    | log_expr
+    | argmin_expr
+    | max_expr
+    | limit_expr
+    | sum_expr
+    | integral_expr
+    | derivative_expr
+    | derivative_prime
+    | double_factorial
+    | transpose
+    | vector
+    | ellipsis
+
+group: LPAREN expr RPAREN
+expr_list: expr ([COMMA] expr)*   // для списков
+
+// ==========OPERATIONS=============
+
+plus_expr: expr "плюс" expr
+minus_expr: expr "минус" expr
+times_expr: expr "умножить" ["на"] expr | atom variable | expr "на" expr 
+divide_expr: expr "делить" ["на"] expr | expr "на" expr
+power_expr: expr "в" ["степень"] expr | expr ["в"] ("квадрат" | "куб" | "куба") | expr "в" INDEX ["степень"]
+root_expr: "корень" [expr | INDEX ["степень"]] "из" expr | ("квадратный" | "кубический") "корень" "из" expr
+plusminus_expr: expr "плюс или минус" expr
+
+// ==========FUNCTIONS=============
+
+function_expr: func_name ["от"] expr
+func_name: "синус" | "косинус" | "тангенс" | "арктангенс"
+         | "котангенс" | "арксинус" | "арккосинус" | "секанс" | "косеканс" 
+         | "гиперболический тангенс" | "sin" | "cos" | "tan" | "cot" | "ctg"
+         | "гамма-функция" | "дигамма-функция"
+         | "ядро" ["функция"] | "определитель" ["матрица"] | "след" ["матрица"] | "норма" ["вектор"]
+         | "математическое ожидание" ["случайный величина"] | "дисперсия" ["случайный величина"] 
+         | "вероятность" ["событие"]
+         | "коэффициент корреляция" | "средний" ["значение"] 
+         | "минимальный" ["значение"] | "максимальный" ["значение"]
+         | "экспонент" | variable
+
+// Логарифмы
+log_expr: "логарифм" ["от"] expr ["по" "основание" expr]   // log_основание(expr)
+        | "натуральный" "логарифм" ["от"] expr             // ln(expr)
+
+// Argmin / Max (условные операторы)
+argmin_expr: "аргумент" "минимизировать" expr "при" expr   // argmin_{condition} f(x)
+max_expr: "максимизировать" expr "при" expr                // max_{condition} f(x)
+
+
+//=============CALCULUS===============
+// Предел: предел при x -> a от f(x)
+limit_expr: "предел" "при" expr "стремиться" "к" expr ["и" expr "стремиться" "к" expr]* ["от"] expr
+
+// Сумма: сумма от i = 1 до n f(i)
+sum_expr: "сумма" "от" expr "равно" expr "до" expr expr
+
+// Интеграл: интеграл от a до b f(x) по dx
+integral_expr: "интеграл" "от" expr "до" expr expr "по" "дэ" expr
+
+// Производная (словами): [второй|третий] [частный] производный от f(x) [по x]
+derivative_expr: ["второй" | "третий"] ["частный"] "производный" "от" expr ["по" expr]
+
+// Производная со штрихом: f'(x)
+derivative_prime: expr "штрих" ["от" expr]
+
+equation: expr ("равно" | "равный") expr
+inequality: expr ("больше" | "меньше" | "больше или равно" | "меньше или равно" 
+    | "больше либо равно" | "меньше либо равно") expr
+subset: expr (["являться"] "подмножество" | "вкладываться в" | "входить в" | "включено в") expr
+in_relation: expr ("элемент" | "входить в" | "из") expr
+notin_relation: expr ("не" ["являться"] "элемент" | "не входить" ["в"]) expr
+mapsto: expr "отображаться" ["в"] expr
+distribution: expr ("следовать" | "иметь") distribution_law
+
+distribution_law: distribution_name "распределение" [distribution_parameters]
+
+distribution_name: ["стандартный"] "нормальный" | "биномиальный" | "пуассоновский" | "равномерный" | "показательный" | "гамма" | "бета" | "хи-квадрат" | "стьюдент" | "фишер" | "логнормальный" | "вейбулл" | "лаплас" | "коши"
+
+distribution_parameters: "с" (expr)+ "степень свобода"
+
+double_factorial: expr "двойной факториал"   // постфиксный !!
+transpose: expr ("транспонировать" | "транспонированный")           // постфиксный ^\top
+vector: "вектор" expr_list                   // [a, b, c]
+ellipsis: (expr)+ "и так далее" ["до"] (expr)+            // a + b + ... + z
